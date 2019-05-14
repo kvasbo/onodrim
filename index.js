@@ -1,6 +1,6 @@
 (function($) {
   const debug = true;
-  const storageVersion = 2;
+  const storageVersion = 3;
   
   // Not in conversation, no JSON capabilities, or no localstorage. Just return.
   if (window.location.pathname.indexOf("/samtale") === -1 || typeof(Storage) === "undefined" || typeof(JSON) === "undefined") {
@@ -20,9 +20,10 @@
   const storedData = JSON.parse(localStorage.getItem(storageKey));
   if (!storedData) {
     const initData = {};
-    initData.time = now;
-    initData.body = body;
-    initData.title = title;
+    initData.currentVersion = {};
+    initData.currentVersion.time = now;
+    initData.currentVersion.body = body;
+    initData.currentVersion.title = title;
     initData.previousVersions = [];
     localStorage.setItem(storageKey, JSON.stringify(initData));
     (debug && console.log('No Onodrim data stored, initalized', initData));
@@ -31,13 +32,26 @@
 
   (debug && console.log('Stored data', storedData));
 
-  // Check if our body is the same as stored body. If it is, return.
-  if (storedData.body === body) {
-    (debug && console.log("Nothing changed, go on"));
+  // Check if our body is the same as stored body. If it is not, store new version.
+  if (storedData.currentVersion.body !== body) {
+    // Push old version to storage
+    storedData.previousVersions.push(storedData.currentVersion);
+
+    // Create new object
+    storedData.currentVersion.time = now;
+    storedData.currentVersion.body = body;
+    storedData.currentVersion.title = title;
+
+    const toStore = JSON.stringify(storedData);
+    localStorage.setItem(storageKey, toStore);
+
+    (debug && console.log("Stored new version", storedData));
+  }
+  
+  if (storedData.previousVersions.length === 0) {
+    (debug && console.log("No previous versions stored"));
     return;
   }
-
-  (debug && console.log("Something has changed!"));
-
+  
 
 })(jQuery);
