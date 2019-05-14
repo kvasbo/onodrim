@@ -38,11 +38,8 @@
   if (storedData.currentVersion.body !== body || storedData.currentVersion.title !== title) {
     // Push old version to storage
     storedData.previousVersions.push(storedData.currentVersion);
-
-    // Create new object
-    storedData.currentVersion.time = now;
-    storedData.currentVersion.body = body;
-    storedData.currentVersion.title = title;
+    // Store current version.
+    storedData.currentVersion = currentVersion;
 
     const toStore = JSON.stringify(storedData);
     localStorage.setItem(storageKey, toStore);
